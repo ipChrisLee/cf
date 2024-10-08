@@ -1,3 +1,5 @@
+anchor_str = "cf"
+
 bist_stdcpp_h_str = """
 // 17.4.1.2 Headers
 
@@ -94,7 +96,12 @@ bist_stdcpp_h_str = """
 default_cpp_file_str = """\
 #include <bits/stdc++.h>
 
-int main() {
+using i32 = int32_t;
+using i64 = int64_t;
+
+int main(int argc, char ** argv) {
+    std::ios::sync_with_stdio(false); std::cin.tie(nullptr);
+
     return 0;
 }
 """
@@ -103,6 +110,34 @@ default_py_file_str = """\
 def main():
     pass
 
+
 if __name__ == '__main__':
     main()
+"""
+
+default_clangd_file_str = """\
+CompileFlags:
+    CompilationDatabase: build/
+"""
+
+default_git_ignore_str = """\
+build
+"""
+
+default_cmakelists_str = """\
+cmake_minimum_required(VERSION 3.21)
+
+project("contest")
+
+include_directories("include")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+add_compile_options("-static" "-Wall" "-Wextra" "-Wno-unused-parameter")
+
+
+file(GLOB cppFiles "*.cpp")
+foreach(cppFile ${cppFiles})
+	get_filename_component(targetName "${cppFile}" NAME_WE)
+	add_executable("${targetName}" "${cppFile}")
+endforeach()
 """
