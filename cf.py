@@ -164,7 +164,11 @@ def do_test_without_build(test_q: str, t_limit: float, dirpath: Path, test_case:
         in_stream.close()
         ans_stream.close()
     if len(fail_reason) == 0:
-        r = subprocess.run(["diff", "-Z", "-B", "-q", out_path, ans_path])
+        diff_path = "diff"
+        # hack for macOS
+        if Path("/opt/homebrew/bin/diff").exists():
+            diff_path = "/opt/homebrew/bin/diff"
+        r = subprocess.run([diff_path, "-Z", "-B", "-q", out_path, ans_path])
         if r.returncode != 0:
             fail_reason = "WA"
     if len(fail_reason) == 0:
