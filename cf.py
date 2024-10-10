@@ -46,13 +46,17 @@ ap_test_all.add_argument("test_all_q", action="store", type=str)
 ap_test = ap_subparsers.add_parser("test")
 ap_test.add_argument("test_q", action="store", type=str)
 ap_test.add_argument("-t", dest="test_case", action="store", type=str)
+# cf.py new_test A
+ap_new_test = ap_subparsers.add_parser("new_test")
+ap_new_test.add_argument("new_test_q", action="store", type=str)
 
 
 def check_anchor():
     with open(".anchor", "r") as fp:
         if fp.readline() != anchor_str:
             return
-    raise FileNotFoundError("Not find proper anchor, check if you are on root of cf.")
+    raise FileNotFoundError(
+        "Not find proper anchor, check if you are on root of cf.")
 
 
 def do_cmake_configure():
@@ -60,7 +64,8 @@ def do_cmake_configure():
         d = yaml.safe_load(fp)
         build_type = d["_build_type"]
     subprocess.run(
-        ["cmake", "-S", ".", "-B", "build", "-D", f"CMAKE_BUILD_TYPE={build_type}"],
+        ["cmake", "-S", ".", "-B", "build", "-D",
+            f"CMAKE_BUILD_TYPE={build_type}"],
         check=True,
     )
 
@@ -68,7 +73,8 @@ def do_cmake_configure():
 def main_build(build_q: str):
     check_anchor()
     if (Path.cwd() / f"{build_q}.cpp").exists():
-        subprocess.run(["cmake", "--build", "build", "--target", build_q], check=True)
+        subprocess.run(["cmake", "--build", "build",
+                       "--target", build_q], check=True)
     else:
         pass
 
@@ -92,6 +98,7 @@ def main_init_folder(init_folder_path: str):
         d = {
             "_create_date": datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
             "_build_type": "Release",
+            "_editor": os.environ.get("EDITOR", "nano"),
         }
         yaml.dump(d, fp)
     # root/CMakeLists.txt
@@ -106,7 +113,8 @@ def main_start(start_q: str, lang: str, t_limit: float):
     check_anchor()
     p = Path.cwd() / f"{start_q}.{lang}"
     if p.exists():
-        raise FileExistsError(f"Creating existing file {p}, remove it and start then.")
+        raise FileExistsError(
+            f"Creating existing file {p}, remove it and start then.")
     with open(p, "w") as fp:
         if lang == "cpp":
             fp.write(default_cpp_file_str)
@@ -207,6 +215,35 @@ def main_test_all(test_q: str):
             )
 
 
+def helper_mex(s: typ.Set[int]) -> int:
+    mex_value = len(s)
+    for i in range(len(s)):
+        if i not in s:
+            mex_value = i
+            break
+    return mex_value
+
+
+def main_new_test(new_test_q: str):
+    check_anchor()
+    with open(Path.cwd() / ".cf.yaml", "r") as fp:
+        d = yaml.safe_load(fp)
+        editor = d["_editor"]
+    si = set()
+    for dirpath, dirnames, filenames in os.walk(Path.cwd() / "tests" / new_test_q):
+        for filename in filenames:
+            filename = Path(filename)
+            try:
+                si.add(int(filename.stem))
+            except ValueError:
+                pass
+    new_test_case_id = helper_mex(si)
+    in_file_path = Path.cwd() / "tests" / new_test_q / f"{new_test_case_id}.in"
+    out_file_path = Path.cwd() / "tests" / new_test_q / \
+        f"{new_test_case_id}.out"
+    subprocess.run([editor, in_file_path, out_file_path], check=True)
+
+
 if __name__ == "__main__":
     argv = ap.parse_args()
     # print(argv)
@@ -222,5 +259,7 @@ if __name__ == "__main__":
         main_test_all(test_q=argv.test_all_q)
     elif argv.func == "test":
         main_test(test_q=argv.test_q, test_case=argv.test_case)
+    elif argv.func == "new_test":
+        main_new_test(new_test_q=argv.new_test_q)
     else:
         raise ValueError(f"Not supported func {argv.func}")
