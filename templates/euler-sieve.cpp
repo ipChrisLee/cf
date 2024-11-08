@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <algorithm>
 
@@ -26,10 +27,22 @@ struct EulerSieve {
 	}
 	bool is_prime(i32 x) { return isPrime_[x]; }
 	i32 min_factor(i32 x) { return mnFactor_[x]; }
+	// 0-index i-th prime.
 	i32 ith_prime(i32 i) { return primes_[i]; }
 };
 // ========================
 
+// https://www.luogu.com.cn/problem/P3383
 int main() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	i32 n, q;
+	std::cin >> n >> q;
+	EulerSieve es(n + 1);
+	while (q--) {
+		i32 i;
+		std::cin >> i;
+		std::cout << es.ith_prime(i - 1) << "\n";
+	}
 	return 0;
 }
