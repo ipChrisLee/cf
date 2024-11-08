@@ -11,6 +11,7 @@ from cf_str_literal import (
     default_clangd_file_str,
     anchor_str,
     default_cmakelists_str,
+    default_clangformat_file_str,
 )
 import os
 import typing as typ
@@ -107,6 +108,9 @@ def main_init_folder(init_folder_path: str):
     # root/.clangd
     with open((init_folder_path / ".clangd"), "w") as fp:
         fp.write(default_clangd_file_str)
+    # root/.clang-format
+    with open((init_folder_path / ".clang-format"), "w") as fp:
+        fp.write(default_clangformat_file_str)
 
 
 def main_start(start_q: str, lang: str, t_limit: float):
